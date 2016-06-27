@@ -604,3 +604,19 @@ UniValue clearbanned(const UniValue& params, bool fHelp)
 
     return NullUniValue;
 }
+
+UniValue broadcastwttxid(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() < 1)
+        throw runtime_error(
+                            "broadcastwttxid\n"
+                            "\nSend WT^ txid to mainchain\n"
+                            "\nArguments:\n"
+                            "1. \"txid\"       (string, required) The transaction id\n"
+                            "\nExamples:\n"
+                            + HelpExampleCli("broadcastwttxid", "\"txid\"")
+                            + HelpExampleRpc("broadcastwttxid", "\"txid\"")
+                            );
+
+    return NullUniValue;
+}
