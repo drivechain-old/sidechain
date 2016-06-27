@@ -6,12 +6,15 @@
 
 #include "chainparams.h"
 #include "clientversion.h"
+#include "coins.h"
+#include "drivechainclient.h"
 #include "main.h"
 #include "net.h"
 #include "netbase.h"
 #include "protocol.h"
 #include "sync.h"
 #include "timedata.h"
+#include "txmempool.h"
 #include "ui_interface.h"
 #include "util.h"
 #include "utilstrencodings.h"
@@ -601,6 +604,37 @@ UniValue clearbanned(const UniValue& params, bool fHelp)
     CNode::ClearBanned();
     DumpBanlist(); //store banlist to disk
     uiInterface.BannedListChanged();
+
+    return NullUniValue;
+}
+
+UniValue broadcastwttxid(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() < 1)
+        throw runtime_error(
+                "broadcastwttxid\n"
+                "\nSend WT^ txid to mainchain\n"
+                "\nArguments:\n"
+                "1. \"txid\"       (string, required) The transaction id\n"
+                "\nExamples:\n"
+                + HelpExampleCli("broadcastwttxid", "\"txid\"")
+                + HelpExampleRpc("broadcastwttxid", "\"txid\"")
+                );
+
+    std::string strHash = params[0].get_str();
+    uint256 hash(uint256S(strHash));
+
+    LOCK(cs_main);
+
+    // Find txid in block index
+    CCoins coins;
+    if (!pcoinsTip->GetCoins(hash, coins))
+        throw JSONRPCError(RPC_MISC_ERROR, "Could not find txid");
+
+    // Send to mainchain
+    DrivechainClient client;
+    if (!client.sendDrivechainWT(hash))
+        throw JSONRPCError(RPC_MISC_ERROR, "Failed to send WT^ txid to mainchain");
 
     return NullUniValue;
 }
