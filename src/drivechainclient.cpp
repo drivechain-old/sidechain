@@ -9,7 +9,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "utilstrencodings.h" // for EncodeBase64
+#include "utilstrencodings.h" // For EncodeBase64
 
 using boost::asio::ip::tcp;
 
@@ -17,23 +17,22 @@ DrivechainClient::DrivechainClient()
 {
 }
 
-DrivechainClient::~DrivechainClient()
-{
-}
-
 bool DrivechainClient::sendDrivechainWT(uint256 txid)
 {
     // JSON for sending the WT^ to mainchain via HTTP-RPC
     std::string json;
-    json.append("{\"jsonrpc\": \"1.0\", \"id\":\"1\", ");
-    json.append("\"method\": \"getnewaddress\", \"params\": ");
-    json.append("[\"\"] }");
+    json.append("{\"jsonrpc\": \"1.0\", \"id\":\"drivechainclient\", ");
+    json.append("\"method\": \"receivesidechainwt\", \"params\": ");
+    json.append("[\"");
+    json.append(txid.GetHex());
+    json.append("\"] }");
 
     return sendRequestToMainchain(json);
 }
 
 bool DrivechainClient::sendRequestToMainchain(std::string json)
 {
+    // TODO remove debug output
     try {
         // Setup BOOST ASIO for a synchronus call to mainchain
         boost::asio::io_service io_service;
@@ -52,9 +51,9 @@ bool DrivechainClient::sendRequestToMainchain(std::string json)
           socket.connect(*endpoint_iterator++, error);
         }
 
-        if (error)
-          throw boost::system::system_error(error);
+        if (error) throw boost::system::system_error(error);
 
+        // TODO username:password
         // HTTP request (package the json for sending)
         boost::asio::streambuf output;
         std::ostream os(&output);
@@ -79,10 +78,8 @@ bool DrivechainClient::sendRequestToMainchain(std::string json)
         is >> code;
         std::getline(is, message);
 
-        if (version.empty() || code != 200) {
-            std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!Error\n"; // TODO
+        if (version.empty() || code != 200)
             return false;
-        }
 
         boost::asio::read_until(socket, res, "\n");
 
@@ -90,19 +87,16 @@ bool DrivechainClient::sendRequestToMainchain(std::string json)
         std::string header;
         while (std::getline(is, header) && header != "\r") { }
 
-        // Read the actual json response
+        // Read json response
         std::stringstream ss;
         if (res.size())
             ss << &res;
 
-        std::cout << "ss: \n" << ss.str() << std::endl;
-        std::cout << "----\n";
-
-        // Parse json
+        // Parse json response
         boost::property_tree::ptree ptree;
         boost::property_tree::json_parser::read_json(ss, ptree);
 
-        std::cout << "Addr generated: " << ptree.get<std::string>("result") << std::endl;
+        std::cout << "sidechainWithdraw generated: " << ptree.get<std::string>("result.withdrawid") << std::endl;
 
     } catch (std::exception &exception) {
         std::cout << "DrivechainClient exception: " << exception.what() << std::endl;

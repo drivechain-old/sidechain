@@ -11,7 +11,6 @@ class DrivechainClient
 {
 public:
     DrivechainClient();
-    ~DrivechainClient();
 
     bool sendDrivechainWT(uint256 txid);
 

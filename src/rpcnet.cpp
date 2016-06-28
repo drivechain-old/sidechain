@@ -610,7 +610,7 @@ UniValue clearbanned(const UniValue& params, bool fHelp)
 
 UniValue broadcastwttxid(const UniValue& params, bool fHelp)
 {
-    if (fHelp || params.size() < 1)
+    if (fHelp || params.size() != 1)
         throw runtime_error(
                 "broadcastwttxid\n"
                 "\nSend WT^ txid to mainchain\n"
