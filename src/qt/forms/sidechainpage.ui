@@ -361,6 +361,111 @@
       <attribute name="title">
        <string>History</string>
       </attribute>
+      <layout class="QGridLayout" name="gridLayout_6">
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_10">
+         <property name="text">
+          <string>WT^ Explorer:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QFrame" name="frame_10">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_7">
+          <item row="0" column="2">
+           <widget class="QLabel" name="label_12">
+            <property name="text">
+             <string>Outgoing</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2">
+           <widget class="QListView" name="listViewOutgoing"/>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLabel" name="label_11">
+            <property name="text">
+             <string>Incoming </string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QListView" name="listViewIncoming"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QFrame" name="frame_9">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_7">
+          <item>
+           <widget class="QLineEdit" name="lineEditWTtxid">
+            <property name="placeholderText">
+             <string>Enter WT^ TXID</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QTreeView" name="treeView"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QFrame" name="frame_11">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QRadioButton" name="radioButtonHighlightMine">
+            <property name="text">
+             <string>Highlight Mine</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButtonOnlyMine">
+            <property name="text">
+             <string>Only Mine</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </widget>
    </item>
