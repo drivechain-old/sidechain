@@ -89,6 +89,7 @@ private:
     QProgressDialog *progressDialog;
 
     QMenuBar *appMenuBar;
+    QAction *sidechainAction;
     QAction *overviewAction;
     QAction *historyAction;
     QAction *quitAction;
@@ -176,6 +177,8 @@ public Q_SLOTS:
 
 private Q_SLOTS:
 #ifdef ENABLE_WALLET
+    /** Switch to sidechain page */
+    void gotoSidechainPage();
     /** Switch to overview (home) page */
     void gotoOverviewPage();
     /** Switch to history (transactions) page */
