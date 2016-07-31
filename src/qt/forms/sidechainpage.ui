@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tabTransfer">
       <attribute name="icon">
@@ -258,17 +258,6 @@
                      </widget>
                     </item>
                     <item>
-                     <widget class="QPushButton" name="pushButtonNew">
-                      <property name="text">
-                       <string>New</string>
-                      </property>
-                      <property name="icon">
-                       <iconset resource="../bitcoin.qrc">
-                        <normaloff>:/movies/spinner-035</normaloff>:/movies/spinner-035</iconset>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
                      <spacer name="horizontalSpacer">
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
@@ -281,7 +270,37 @@
                       </property>
                      </spacer>
                     </item>
+                    <item>
+                     <widget class="QPushButton" name="pushButtonNew">
+                      <property name="text">
+                       <string>New</string>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="../bitcoin.qrc">
+                        <normaloff>:/movies/spinner-035</normaloff>:/movies/spinner-035</iconset>
+                      </property>
+                     </widget>
+                    </item>
                    </layout>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="pushButton_2">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>80</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>QR Code </string>
+                   </property>
                   </widget>
                  </item>
                  <item>
@@ -385,9 +404,6 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="2">
-           <widget class="QListView" name="listViewOutgoing"/>
-          </item>
           <item row="0" column="1">
            <widget class="QLabel" name="label_11">
             <property name="text">
@@ -395,8 +411,11 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
-           <widget class="QListView" name="listViewIncoming"/>
+          <item row="1" column="2">
+           <widget class="QTableView" name="tableViewOutgoing"/>
+          </item>
+          <item row="1" column="1">
+           <widget class="QTableView" name="tableViewIncoming"/>
           </item>
          </layout>
         </widget>
