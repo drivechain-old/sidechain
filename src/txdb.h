@@ -8,6 +8,8 @@
 
 #include "coins.h"
 #include "dbwrapper.h"
+#include "main.h"
+#include "primitives/drivechain.h"
 
 #include <map>
 #include <string>
@@ -60,6 +62,26 @@ public:
     bool WriteFlag(const std::string &name, bool fValue);
     bool ReadFlag(const std::string &name, bool &fValue);
     bool LoadBlockIndexGuts();
+};
+
+/** Access to the drivechain database (blocks/drivechain/) */
+class CDrivechainTreeDB : public CDBWrapper
+{
+public:
+    CDrivechainTreeDB(size_t nCacheSize, bool fMemory = false, bool fWipe = false);
+private:
+    CDrivechainTreeDB(const CBlockTreeDB&);
+    void operator=(const CBlockTreeDB&);
+public:
+    bool WriteBatchSync(const std::vector<std::pair<int, const CBlockFileInfo*> >& fileInfo, int nLastFile, const std::vector<const CBlockIndex*>& blockinfo);
+    bool ReadBlockFileInfo(int nFile, CBlockFileInfo &fileinfo);
+    bool ReadLastBlockFile(int &nFile);
+    bool WriteReindexing(bool fReindex);
+    bool ReadReindexing(bool &fReindex);
+    bool WriteDrivechainIndex(const std::vector<std::pair<uint256, const drivechainObj *> > &list);
+    bool WriteFlag(const std::string &name, bool fValue);
+    bool ReadFlag(const std::string &name, bool &fValue);
+    bool LoadBlockIndexGuts(boost::function<CBlockIndex*(const uint256&)> insertBlockIndex);
 };
 
 #endif // BITCOIN_TXDB_H

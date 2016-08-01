@@ -217,3 +217,75 @@ bool CBlockTreeDB::LoadBlockIndexGuts()
 
     return true;
 }
+
+CDrivechainTreeDB::CDrivechainTreeDB(size_t nCacheSize, bool fMemory, bool fWipe)
+    : CDBWrapper(GetDataDir() / "blocks" / "drivechain", nCacheSize, fMemory, fWipe) {
+}
+
+bool CDrivechainTreeDB::ReadBlockFileInfo(int nFile, CBlockFileInfo &fileinfo) {
+    return Read(make_pair(DB_BLOCK_FILES, nFile), fileinfo);
+}
+
+bool CDrivechainTreeDB::WriteReindexing(bool fReindex) {
+    if (fReindex)
+        return Write(DB_REINDEX_FLAG, '1');
+    else
+        return Erase(DB_REINDEX_FLAG);
+}
+
+bool CDrivechainTreeDB::ReadReindexing(bool &fReindex) {
+    fReindex = Exists(DB_REINDEX_FLAG);
+    return true;
+}
+
+bool CDrivechainTreeDB::ReadLastBlockFile(int &nFile) {
+    return Read(DB_LAST_BLOCK, nFile);
+}
+
+bool CDrivechainTreeDB::WriteBatchSync(const std::vector<std::pair<int, const CBlockFileInfo *> > &fileInfo, int nLastFile, const std::vector<const CBlockIndex *> &blockinfo) {
+    CDBBatch batch(&GetObfuscateKey());
+    for (std::vector<std::pair<int, const CBlockFileInfo*> >::const_iterator it=fileInfo.begin(); it != fileInfo.end(); it++) {
+        batch.Write(make_pair(DB_BLOCK_FILES, it->first), *it->second);
+    }
+    batch.Write(DB_LAST_BLOCK, nLastFile);
+    for (std::vector<const CBlockIndex*>::const_iterator it=blockinfo.begin(); it != blockinfo.end(); it++) {
+        batch.Write(make_pair(DB_BLOCK_INDEX, (*it)->GetBlockHash()), CDiskBlockIndex(*it));
+    }
+    return WriteBatch(batch, true);
+}
+
+bool CDrivechainTreeDB::WriteDrivechainIndex(const std::vector<std::pair<uint256, const drivechainObj *> > &list)
+{
+    CDBBatch batch(&GetObfuscateKey());
+    for (std::vector<std::pair<uint256, const drivechainObj *> >::const_iterator it=list.begin(); it!=list.end(); it++) {
+        const uint256 &objid = it->first;
+        const drivechainObj *obj = it->second;
+        pair<char, uint256> key = make_pair(obj->drivechainop, objid);
+
+        if (obj->drivechainop == 'I') {
+            const drivechainIncoming *ptr = (const drivechainIncoming *) obj;
+            pair<drivechainIncoming, uint256> value = make_pair(*ptr, obj->txid);
+            batch.Write(key, value);
+        }
+        else
+        if (obj->drivechainop == 'O') {
+            const drivechainOutgoing *ptr = (const drivechainOutgoing *) obj;
+            pair<drivechainOutgoing, uint256> value = make_pair(*ptr, obj->txid);
+            batch.Write(key, value);
+        }
+    }
+    return WriteBatch(batch);
+}
+
+//bool CDrivechainTreeDB::ReadFlag(const string &name, bool fValue)
+bool CDrivechainTreeDB::ReadFlag(const std::string &name, bool &fValue) {
+    char ch;
+    if (!Read(make_pair(DB_FLAG, name), ch))
+        return false;
+    fValue = ch == '1';
+    return true;
+}
+
+bool CDrivechainTreeDB::WriteFlag(const std::string &name, bool fValue) {
+    return Write(std::make_pair(DB_FLAG, name), fValue ? '1' : '0');
+}
