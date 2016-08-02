@@ -397,11 +397,15 @@
           <enum>QFrame::Raised</enum>
          </property>
          <layout class="QGridLayout" name="gridLayout_7">
-          <item row="0" column="2">
-           <widget class="QLabel" name="label_12">
-            <property name="text">
-             <string>Outgoing</string>
+          <item row="2" column="2">
+           <widget class="QFrame" name="frameOutgoing">
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
             </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_8"/>
            </widget>
           </item>
           <item row="0" column="1">
@@ -411,11 +415,23 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="2">
-           <widget class="QTableView" name="tableViewOutgoing"/>
+          <item row="2" column="1">
+           <widget class="QFrame" name="frameIncoming">
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_6"/>
+           </widget>
           </item>
-          <item row="1" column="1">
-           <widget class="QTableView" name="tableViewIncoming"/>
+          <item row="0" column="2">
+           <widget class="QLabel" name="label_12">
+            <property name="text">
+             <string>Outgoing</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>

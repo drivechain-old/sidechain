@@ -1,10 +1,8 @@
 #include "drivechainhistorytablemodel.h"
 
-DrivechainHistoryTableModel::DrivechainHistoryTableModel(CWallet *wallet, WalletModel *parent) :
-    walletModel(parent)
+DrivechainHistoryTableModel::DrivechainHistoryTableModel(QObject *parent) :
+    QAbstractTableModel(parent)
 {
-    Q_UNUSED(wallet);
-
     /*
      * Table Columns:
      * 1. Type (incoming, outgoing)
