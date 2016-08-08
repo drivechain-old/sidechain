@@ -33,6 +33,7 @@ class CBlockIndex;
 class CBlockTreeDB;
 class CBloomFilter;
 class CChainParams;
+class CDrivechainTreeDB;
 class CInv;
 class CScriptCheck;
 class CTxMemPool;
@@ -528,6 +529,9 @@ extern CCoinsViewCache *pcoinsTip;
 
 /** Global variable that points to the active block tree (protected by cs_main) */
 extern CBlockTreeDB *pblocktree;
+
+/** Global variable that points to the drivechain tree (protected by cs_main) */
+extern CDrivechainTreeDB *pdrivechaintree;
 
 /**
  * Return the spend height, which is one more than the inputs.GetBestBlock().

@@ -17,6 +17,7 @@
 #include "net.h"
 #include "policy/policy.h"
 #include "pow.h"
+#include "primitives/drivechain.h"
 #include "primitives/transaction.h"
 #include "script/standard.h"
 #include "timedata.h"
@@ -30,6 +31,8 @@
 #include <queue>
 
 using namespace std;
+
+extern CDrivechainTreeDB *pdrivechaintree;
 
 //////////////////////////////////////////////////////////////////////////////
 //

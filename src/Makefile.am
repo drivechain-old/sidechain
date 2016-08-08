@@ -127,6 +127,7 @@ BITCOIN_CORE_H = \
   pow.h \
   prevector.h \
   primitives/block.h \
+  primitives/drivechain.h \
   primitives/transaction.h \
   protocol.h \
   pubkey.h \
@@ -283,6 +284,7 @@ libbitcoin_common_a_SOURCES = \
   keystore.cpp \
   netbase.cpp \
   primitives/block.cpp \
+  primitives/drivechain.cpp \
   primitives/transaction.cpp \
   protocol.cpp \
   pubkey.cpp \
@@ -409,6 +411,7 @@ libbitcoinconsensus_la_SOURCES = \
   crypto/sha256.cpp \
   crypto/sha512.cpp \
   hash.cpp \
+  primitives/drivechain.cpp \
   primitives/transaction.cpp \
   pubkey.cpp \
   script/bitcoinconsensus.cpp \

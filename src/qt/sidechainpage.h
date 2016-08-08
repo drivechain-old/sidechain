@@ -1,6 +1,9 @@
 #ifndef SIDECHAINPAGE_H
 #define SIDECHAINPAGE_H
 
+#include "drivechainhistorytablemodel.h"
+
+#include <QTableView>
 #include <QWidget>
 
 namespace Ui {
@@ -26,6 +29,12 @@ private Q_SLOTS:
 
 private:
     Ui::SidechainPage *ui;
+
+    QTableView *incomingTableView;
+    QTableView *outgoingTableView;
+
+    DrivechainHistoryTableModel *incomingTableModel;
+    DrivechainHistoryTableModel *outgoingTableModel;
 };
 
 #endif // SIDECHAINPAGE_H
