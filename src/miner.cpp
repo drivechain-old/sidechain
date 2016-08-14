@@ -12,6 +12,7 @@
 #include "consensus/consensus.h"
 #include "consensus/merkle.h"
 #include "consensus/validation.h"
+#include "drivechain.h"
 #include "hash.h"
 #include "main.h"
 #include "net.h"
@@ -21,6 +22,7 @@
 #include "primitives/transaction.h"
 #include "script/standard.h"
 #include "timedata.h"
+#include "txdb.h"
 #include "txmempool.h"
 #include "util.h"
 #include "utilmoneystr.h"
@@ -74,6 +76,12 @@ int64_t UpdateTime(CBlockHeader* pblock, const Consensus::Params& consensusParam
     return nNewTime - nOldTime;
 }
 
+CTransaction getDrivechainTX(uint32_t height)
+{
+    CMutableTransaction mtx;
+    return mtx;
+}
+
 CBlockTemplate* CreateNewBlock(const CChainParams& chainparams, const CScript& scriptPubKeyIn)
 {
     // Create new block
@@ -93,6 +101,12 @@ CBlockTemplate* CreateNewBlock(const CChainParams& chainparams, const CScript& s
     pblock->vtx.push_back(CTransaction());
     pblocktemplate->vTxFees.push_back(-1); // updated at end
     pblocktemplate->vTxSigOps.push_back(-1); // updated at end
+
+    // Create drivechain txs
+    uint32_t height = chainActive.Height() + 1;
+    CTransaction dctx = getDrivechainTX(height);
+    if (dctx.vout.size())
+        pblock->vtx.push_back(dctx);
 
     // Largest block you're willing to create:
     unsigned int nBlockMaxSize = GetArg("-blockmaxsize", DEFAULT_BLOCK_MAX_SIZE);
