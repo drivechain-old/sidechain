@@ -5,6 +5,7 @@
 #include "drivechainclient.h"
 
 #include "utilstrencodings.h" // For EncodeBase64
+#include "util.h" // For logPrintf
 
 #include <iostream>
 #include <sstream>
@@ -127,7 +128,7 @@ bool DrivechainClient::sendRequestToMainchain(const string json, boost::property
         // Parse json response;
         boost::property_tree::json_parser::read_json(ss, ptree);
     } catch (std::exception &exception) {
-        // TODO display error
+        LogPrintf("Drivechain client (sendRequestToMainchain): %s\n", exception.what());
         return false;
     }
     return true;
