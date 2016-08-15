@@ -12,7 +12,7 @@
 #include "consensus/consensus.h"
 #include "consensus/merkle.h"
 #include "consensus/validation.h"
-#include "drivechain.h"
+#include "drivechainclient.h"
 #include "hash.h"
 #include "main.h"
 #include "net.h"
@@ -79,6 +79,24 @@ int64_t UpdateTime(CBlockHeader* pblock, const Consensus::Params& consensusParam
 CTransaction getDrivechainTX(uint32_t height)
 {
     CMutableTransaction mtx;
+
+    if (!pdrivechaintree) return mtx;
+
+    DrivechainClient client;
+    std::vector<drivechainIncoming> vDeposits = client.getDeposits(chainActive.Tip()->nHeight);
+
+    // Filter out invalid deposits
+    std::vector<drivechainIncoming> vCurrentDeposits;
+    for (size_t i = 0; i < vDeposits.size(); i++) {
+        // Check deposit TODO
+        vCurrentDeposits.push_back(vDeposits[i]);
+    }
+
+    // Add valid deposit transactions to mtx
+    for (size_t i = 0; i < vCurrentDeposits.size(); i++) {
+        mtx.vout.push_back(CTxOut(1000000, vCurrentDeposits[i].GetScript()));
+    }
+
     return mtx;
 }
 

@@ -5,7 +5,12 @@
 #ifndef DRIVECHAINCLIENT_H
 #define DRIVECHAINCLIENT_H
 
+#include "primitives/drivechain.h"
 #include "uint256.h"
+
+#include <boost/property_tree/json_parser.hpp>
+
+#include <vector>
 
 class DrivechainClient
 {
@@ -14,8 +19,10 @@ public:
 
     bool sendDrivechainWT(uint256 txid);
 
+    std::vector<drivechainIncoming> getDeposits(uint32_t height);
+
 private:
-    bool sendRequestToMainchain(std::string json);
+    bool sendRequestToMainchain(const std::string json, boost::property_tree::ptree &ptree);
 };
 
 #endif // DRIVECHAINCLIENT_H
