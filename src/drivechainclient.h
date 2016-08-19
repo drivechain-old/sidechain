@@ -19,7 +19,7 @@ public:
 
     bool sendDrivechainWT(uint256 txid);
 
-    std::vector<drivechainIncoming> getDeposits(uint32_t height);
+    std::vector<drivechainIncoming> getDeposits(uint256 sidechainid, uint32_t height);
 
 private:
     bool sendRequestToMainchain(const std::string json, boost::property_tree::ptree &ptree);

@@ -16,6 +16,9 @@
 
 using boost::asio::ip::tcp;
 
+// Max buffer size for drivechain requests
+const int MAX_DC_SIZE = 1024; // TODO update
+
 DrivechainClient::DrivechainClient()
 {
 
@@ -36,8 +39,9 @@ bool DrivechainClient::sendDrivechainWT(uint256 txid)
     return sendRequestToMainchain(json, ptree);
 }
 
-std::vector<drivechainIncoming> DrivechainClient::getDeposits(uint32_t height)
+std::vector<drivechainIncoming> DrivechainClient::getDeposits(uint256 sidechainid, uint32_t height)
 {
+    // List of deposits in drivechain format for DB
     std::vector<drivechainIncoming> incoming;
 
     // JSON for requesting drivechain deposits via mainchain HTTP-RPC
@@ -45,19 +49,23 @@ std::vector<drivechainIncoming> DrivechainClient::getDeposits(uint32_t height)
     json.append("{\"jsonrpc\": \"1.0\", \"id\":\"drivechainclient\", ");
     json.append("\"method\": \"requestdrivechaindeposits\", \"params\": ");
     json.append("[\"");
+    json.append(sidechainid.GetHex());
+    json.append("\",");
     json.append(itostr(height));
-    json.append("\"] }");
+    json.append("] }");
 
     // Try to request deposits from mainchain
     boost::property_tree::ptree ptree;
-    if (!sendRequestToMainchain(json, ptree)) {
+    if (!sendRequestToMainchain(json, ptree))
         return incoming; // TODO display error
-    }
 
     // Process deposits
-    BOOST_FOREACH(boost::property_tree::ptree::value_type &value, ptree.get_child("")) {
-        std::string a = value.second.data();
-        std::cout << "[***]deposit a: " << a << std::endl;
+    BOOST_FOREACH(boost::property_tree::ptree::value_type &value, ptree.get_child("result")) {
+        // Looping through list of deposits
+        BOOST_FOREACH(boost::property_tree::ptree::value_type &v, value.second.get_child("")) {
+            // Looping through this deposit's members
+            std::cout << "getDeposits v: " << v.second.data() << std::endl; // TODO
+        }
     }
 
     // return valid deposits in drivechain format
@@ -94,41 +102,58 @@ bool DrivechainClient::sendRequestToMainchain(const string json, boost::property
         os << "Host: 127.0.0.1\n";
         os << "Content-Type: application/json\n";
         os << "Authorization: Basic " << EncodeBase64("patrick:drivechain") << "\n";
+        os << "Connection: close\n";
         os << "Content-Length: " << json.size() << "\n\n";
         os << json;
 
         // Send the request
         boost::asio::write(socket, output);
         boost::asio::streambuf res;
-        boost::asio::read_until(socket, res, "\n");
 
-        // Read the request header info
-        std::string version;
-        unsigned int code;
-        std::string message;
-        std::istream is(&res);
-        is >> version;
-        is >> code;
-        std::getline(is, message);
+        // TODO Perhaps use boost's read function instead
 
-        if (version.empty() || code != 200)
-            return false;
+        // Read the reponse
+        boost::array<char, MAX_DC_SIZE> buf;
+        for (;;)
+        {
+            // Read until end of file (socket closed)
+            boost::system::error_code e;
+            socket.read_some(boost::asio::buffer(buf), e);
 
-        boost::asio::read_until(socket, res, "\n");
+            if (e == boost::asio::error::eof)
+                break; // socket closed
+            else if (e)
+                throw boost::system::system_error(e);
+        }
+
+        std::stringstream ss;
+        ss << buf.data();
+
+        // Get response code
+        ss.ignore(numeric_limits<streamsize>::max(), ' ');
+        int code;
+        ss >> code;
+
+        // Check response code
+        if (code != 200) return false;
 
         // Skip the rest of the header
-        std::string header;
-        while (std::getline(is, header) && header != "\r") { }
+        for (size_t i = 0; i < 5; i++)
+            ss.ignore(numeric_limits<streamsize>::max(), '\r');
 
-        // Read json response
-        std::stringstream ss;
-        if (res.size())
-            ss << &res;
+        std::string JSON;
+        ss >> JSON;
+        std::cout << "JSON: \n" << JSON << std::endl; // TODO
+
+        // TODO Do this without a second ss?
+        std::stringstream jss;
+        jss << JSON;
 
         // Parse json response;
-        boost::property_tree::json_parser::read_json(ss, ptree);
+        boost::property_tree::json_parser::read_json(jss, ptree);
     } catch (std::exception &exception) {
-        LogPrintf("Drivechain client (sendRequestToMainchain): %s\n", exception.what());
+        std::cout << "DV: except: " << exception.what() <<  "\n"; // TODO
+        LogPrintf("ERROR Drivechain client (sendRequestToMainchain): %s\n", exception.what());
         return false;
     }
     return true;

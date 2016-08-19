@@ -14,6 +14,9 @@
 
 using namespace std;
 
+// uint256 hash (sidechainid) of THIS sidechain
+static const uint256 SIDECHAIN_ID = uint256S("0xca85db47c45dfccfa9f5562f7383c7b3fe1746017327371771ed3f70345b72d4");
+
 /**
  * Drivechain object for database
  */

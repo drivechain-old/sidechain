@@ -83,19 +83,16 @@ CTransaction getDrivechainTX(uint32_t height)
     if (!pdrivechaintree) return mtx;
 
     DrivechainClient client;
-    std::vector<drivechainIncoming> vDeposits = client.getDeposits(chainActive.Tip()->nHeight);
+    std::vector<drivechainIncoming> vIncoming = client.getDeposits(SIDECHAIN_ID, chainActive.Tip()->nHeight);
 
-    // Filter out invalid deposits
-    std::vector<drivechainIncoming> vCurrentDeposits;
-    for (size_t i = 0; i < vDeposits.size(); i++) {
+    for (size_t i = 0; i < vIncoming.size(); i++) {
         // Check deposit TODO
-        vCurrentDeposits.push_back(vDeposits[i]);
     }
 
     // Add valid deposit transactions to mtx
-    for (size_t i = 0; i < vCurrentDeposits.size(); i++) {
-        mtx.vout.push_back(CTxOut(1000000, vCurrentDeposits[i].GetScript()));
-    }
+    //for (size_t i = 0; i < vCurrentDeposits.size(); i++) {
+    //    mtx.vout.push_back(CTxOut(1000000, vCurrentDeposits[i].GetScript()));
+    //}
 
     return mtx;
 }
@@ -120,8 +117,9 @@ CBlockTemplate* CreateNewBlock(const CChainParams& chainparams, const CScript& s
     pblocktemplate->vTxFees.push_back(-1); // updated at end
     pblocktemplate->vTxSigOps.push_back(-1); // updated at end
 
-    // Create drivechain txs
+    // Create drivechain tx
     uint32_t height = chainActive.Height() + 1;
+
     CTransaction dctx = getDrivechainTX(height);
     if (dctx.vout.size())
         pblock->vtx.push_back(dctx);
