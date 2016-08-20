@@ -5,6 +5,7 @@
 #ifndef DRIVECHAIN_H
 #define DRIVECHAIN_H
 
+#include "pubkey.h"
 #include "script/script.h"
 #include "serialize.h"
 #include "uint256.h"
@@ -43,6 +44,8 @@ drivechainObj *drivechainObjCtr(const CScript &script);
  */
 struct drivechainIncoming : public drivechainObj {
     uint256 txid;
+    uint256 sidechainid;
+    CKeyID keyID;
 
     drivechainIncoming(void) : drivechainObj() { drivechainop = 'I'; }
     virtual ~drivechainIncoming(void) { }
@@ -53,6 +56,8 @@ struct drivechainIncoming : public drivechainObj {
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
         READWRITE(drivechainop);
         READWRITE(txid);
+        READWRITE(sidechainid);
+        READWRITE(keyID);
     }
 
     string ToString(void) const;

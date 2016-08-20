@@ -62,10 +62,34 @@ std::vector<drivechainIncoming> DrivechainClient::getDeposits(uint256 sidechaini
     // Process deposits
     BOOST_FOREACH(boost::property_tree::ptree::value_type &value, ptree.get_child("result")) {
         // Looping through list of deposits
+        drivechainIncoming deposit;
         BOOST_FOREACH(boost::property_tree::ptree::value_type &v, value.second.get_child("")) {
             // Looping through this deposit's members
-            std::cout << "getDeposits v: " << v.second.data() << std::endl; // TODO
+            std::string data = v.second.data();
+            if (!data.length())
+                continue;
+
+            std::cout << "getDeposits v: " << data << std::endl; // TODO
+
+            // TODO this better, use json keypairs in server response
+
+            // TODO Actually, just get the deposit hash, and add a
+            // function to the drivechain client that can deserialize
+            // the deposit, take those values and create a drivechain
+            // incoming object.
+            if (data.at(0) == '1' && data.length() == 40) {
+                // KeyID
+                deposit.keyID.SetHex(data);
+            }
+            else
+            if (data.length() == 64) {
+                // Get the sidechain id
+                if (uint256S(data) == SIDECHAIN_ID)
+                    deposit.sidechainid.SetHex(data);
+            }
         }
+        // Add this deposit to the list
+        incoming.push_back(deposit);
     }
 
     // return valid deposits in drivechain format
@@ -110,7 +134,7 @@ bool DrivechainClient::sendRequestToMainchain(const string json, boost::property
         boost::asio::write(socket, output);
         boost::asio::streambuf res;
 
-        // TODO Perhaps use boost's read function instead
+        // TODO use boost's read function instead
 
         // Read the reponse
         boost::array<char, MAX_DC_SIZE> buf;
@@ -145,11 +169,11 @@ bool DrivechainClient::sendRequestToMainchain(const string json, boost::property
         ss >> JSON;
         std::cout << "JSON: \n" << JSON << std::endl; // TODO
 
-        // TODO Do this without a second ss?
         std::stringstream jss;
         jss << JSON;
 
         // Parse json response;
+        // TODO consider using univalue read_json instead of boost
         boost::property_tree::json_parser::read_json(jss, ptree);
     } catch (std::exception &exception) {
         std::cout << "DV: except: " << exception.what() <<  "\n"; // TODO
