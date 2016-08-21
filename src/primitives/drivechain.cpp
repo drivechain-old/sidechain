@@ -37,7 +37,7 @@ CScript drivechainObj::GetScript(void) const
         ((drivechainOutgoing *) this)->Serialize(ds, nType, nVersion);
 
     CScript script;
-    script << vector<unsigned char>(ds.begin(), ds.end()) << OP_RETURN; // TODO OP_DRIVECHAIN
+    script << vector<unsigned char>(ds.begin(), ds.end()) << OP_DRIVECHAIN;
     return script;
 }
 

@@ -16,9 +16,6 @@
 
 using boost::asio::ip::tcp;
 
-// Max buffer size for drivechain requests
-const int MAX_DC_SIZE = 1024; // TODO update
-
 DrivechainClient::DrivechainClient()
 {
 
@@ -137,7 +134,7 @@ bool DrivechainClient::sendRequestToMainchain(const string json, boost::property
         // TODO use boost's read function instead
 
         // Read the reponse
-        boost::array<char, MAX_DC_SIZE> buf;
+        boost::array<char, 4096> buf;
         for (;;)
         {
             // Read until end of file (socket closed)
