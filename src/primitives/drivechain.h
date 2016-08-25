@@ -5,6 +5,7 @@
 #ifndef DRIVECHAIN_H
 #define DRIVECHAIN_H
 
+#include "coins.h"
 #include "pubkey.h"
 #include "script/script.h"
 #include "serialize.h"
@@ -46,6 +47,7 @@ struct drivechainIncoming : public drivechainObj {
     uint256 txid;
     uint256 sidechainid;
     CKeyID keyID;
+    CTransaction deposit;
 
     drivechainIncoming(void) : drivechainObj() { drivechainop = 'I'; }
     virtual ~drivechainIncoming(void) { }
@@ -58,6 +60,7 @@ struct drivechainIncoming : public drivechainObj {
         READWRITE(txid);
         READWRITE(sidechainid);
         READWRITE(keyID);
+        READWRITE(deposit);
     }
 
     string ToString(void) const;
@@ -68,6 +71,9 @@ struct drivechainIncoming : public drivechainObj {
  */
 struct drivechainOutgoing : public drivechainObj {
     uint256 txid;
+    uint256 sidechainid;
+    CKeyID keyID;
+    CTransaction wt;
 
     drivechainOutgoing(void) : drivechainObj() { drivechainop = 'O'; }
     virtual ~drivechainOutgoing(void) { }

@@ -21,7 +21,7 @@ DrivechainClient::DrivechainClient()
 
 }
 
-bool DrivechainClient::sendDrivechainWT(uint256 txid)
+bool DrivechainClient::sendDrivechainWT(uint256 txid, std::string hex)
 {
     // JSON for sending the WT^ to mainchain via HTTP-RPC
     std::string json;
@@ -29,6 +29,8 @@ bool DrivechainClient::sendDrivechainWT(uint256 txid)
     json.append("\"method\": \"receivesidechainwt\", \"params\": ");
     json.append("[\"");
     json.append(txid.GetHex());
+    json.append("\",\"");
+    json.append(hex);
     json.append("\"] }");
 
     // TODO Read result, display to user
