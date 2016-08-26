@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>960</width>
-    <height>601</height>
+    <width>985</width>
+    <height>649</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tabTransfer">
       <attribute name="icon">
@@ -201,17 +201,84 @@
                    </property>
                    <layout class="QGridLayout" name="gridLayout_5">
                     <item row="1" column="0">
-                     <widget class="QDoubleSpinBox" name="doubleSpinBox"/>
+                     <layout class="QHBoxLayout" name="payToLayout">
+                      <property name="spacing">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QValidatedLineEdit" name="payTo">
+                        <property name="toolTip">
+                         <string>The Bitcoin address to send the payment to</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QToolButton" name="pasteButton">
+                        <property name="toolTip">
+                         <string>Paste address from clipboard</string>
+                        </property>
+                        <property name="text">
+                         <string/>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../bitcoin.qrc">
+                          <normaloff>:/icons/editpaste</normaloff>:/icons/editpaste</iconset>
+                        </property>
+                        <property name="iconSize">
+                         <size>
+                          <width>22</width>
+                          <height>22</height>
+                         </size>
+                        </property>
+                        <property name="shortcut">
+                         <string>Alt+P</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QToolButton" name="deleteButton">
+                        <property name="toolTip">
+                         <string>Remove this entry</string>
+                        </property>
+                        <property name="text">
+                         <string/>
+                        </property>
+                        <property name="icon">
+                         <iconset resource="../bitcoin.qrc">
+                          <normaloff>:/icons/remove</normaloff>:/icons/remove</iconset>
+                        </property>
+                        <property name="iconSize">
+                         <size>
+                          <width>22</width>
+                          <height>22</height>
+                         </size>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
                     </item>
                     <item row="0" column="0">
                      <widget class="QLabel" name="label_9">
                       <property name="text">
-                       <string>Withdraw Amount:</string>
+                       <string>Withdraw:</string>
                       </property>
                      </widget>
                     </item>
-                    <item row="1" column="1">
-                     <widget class="QPushButton" name="pushButton">
+                    <item row="2" column="0">
+                     <layout class="QHBoxLayout" name="horizontalLayoutAmount" stretch="0">
+                      <item>
+                       <widget class="BitcoinAmountField" name="payAmount"/>
+                      </item>
+                     </layout>
+                    </item>
+                    <item row="1" column="1" rowspan="2">
+                     <widget class="QPushButton" name="pushButtonWT">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
                       <property name="text">
                        <string>Withdraw</string>
                       </property>
@@ -319,6 +386,19 @@
                 </layout>
                </widget>
               </widget>
+             </item>
+             <item>
+              <spacer name="verticalSpacer_2">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
              </item>
             </layout>
            </widget>
@@ -506,6 +586,18 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QValidatedLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>qvalidatedlineedit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>BitcoinAmountField</class>
+   <extends>QLineEdit</extends>
+   <header>bitcoinamountfield.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../bitcoin.qrc"/>
  </resources>

@@ -4,6 +4,7 @@
 
 #include "drivechainclient.h"
 
+#include "core_io.h"
 #include "utilstrencodings.h" // For EncodeBase64
 #include "util.h" // For logPrintf
 
@@ -21,14 +22,14 @@ DrivechainClient::DrivechainClient()
 
 }
 
-bool DrivechainClient::sendDrivechainWT(uint256 txid, std::string hex)
+bool DrivechainClient::sendDrivechainWT(uint256 wtjid, std::string hex)
 {
     // JSON for sending the WT^ to mainchain via HTTP-RPC
     std::string json;
     json.append("{\"jsonrpc\": \"1.0\", \"id\":\"drivechainclient\", ");
     json.append("\"method\": \"receivesidechainwt\", \"params\": ");
     json.append("[\"");
-    json.append(txid.GetHex());
+    json.append(wtjid.GetHex());
     json.append("\",\"");
     json.append(hex);
     json.append("\"] }");
@@ -38,10 +39,10 @@ bool DrivechainClient::sendDrivechainWT(uint256 txid, std::string hex)
     return sendRequestToMainchain(json, ptree);
 }
 
-std::vector<drivechainIncoming> DrivechainClient::getDeposits(uint256 sidechainid, uint32_t height)
+std::vector<drivechainDeposit> DrivechainClient::getDeposits(uint256 sidechainid, uint32_t height)
 {
     // List of deposits in drivechain format for DB
-    std::vector<drivechainIncoming> incoming;
+    std::vector<drivechainDeposit> incoming;
 
     // JSON for requesting drivechain deposits via mainchain HTTP-RPC
     std::string json;
@@ -61,30 +62,37 @@ std::vector<drivechainIncoming> DrivechainClient::getDeposits(uint256 sidechaini
     // Process deposits
     BOOST_FOREACH(boost::property_tree::ptree::value_type &value, ptree.get_child("result")) {
         // Looping through list of deposits
-        drivechainIncoming deposit;
+        drivechainDeposit deposit;
         BOOST_FOREACH(boost::property_tree::ptree::value_type &v, value.second.get_child("")) {
             // Looping through this deposit's members
-            std::string data = v.second.data();
-            if (!data.length())
-                continue;
+            if (v.first == "sidechainid") {
+                std::string data = v.second.data();
+                if (!data.length())
+                    continue;
 
-            std::cout << "getDeposits v: " << data << std::endl; // TODO
-
-            // TODO this better, use json keypairs in server response
-
-            // TODO Actually, just get the deposit hash, and add a
-            // function to the drivechain client that can deserialize
-            // the deposit, take those values and create a drivechain
-            // incoming object.
-            if (data.at(0) == '1' && data.length() == 40) {
-                // KeyID
-                deposit.keyID.SetHex(data);
-            }
-            else
-            if (data.length() == 64) {
-                // Get the sidechain id
+                // Sidechain ID
                 if (uint256S(data) == SIDECHAIN_ID)
                     deposit.sidechainid.SetHex(data);
+            }
+            else
+            if (v.first == "dt") {
+                std::string data = v.second.data();
+                if (!data.length())
+                    continue;
+
+                // Deposit Transaction
+                CTransaction dtx;
+                if (DecodeHexTx(dtx, data))
+                    deposit.deposit = dtx;
+            }
+            else
+            if (v.first == "keyID") {
+                std::string data = v.second.data();
+                if (!data.length())
+                    continue;
+
+                // KeyID
+                deposit.keyID.SetHex(data);
             }
         }
         // Add this deposit to the list
@@ -131,7 +139,6 @@ bool DrivechainClient::sendRequestToMainchain(const string json, boost::property
 
         // Send the request
         boost::asio::write(socket, output);
-        boost::asio::streambuf res;
 
         // TODO use boost's read function instead
 
@@ -166,7 +173,6 @@ bool DrivechainClient::sendRequestToMainchain(const string json, boost::property
 
         std::string JSON;
         ss >> JSON;
-        std::cout << "JSON: \n" << JSON << std::endl; // TODO
 
         std::stringstream jss;
         jss << JSON;
@@ -175,7 +181,6 @@ bool DrivechainClient::sendRequestToMainchain(const string json, boost::property
         // TODO consider using univalue read_json instead of boost
         boost::property_tree::json_parser::read_json(jss, ptree);
     } catch (std::exception &exception) {
-        std::cout << "DV: except: " << exception.what() <<  "\n"; // TODO
         LogPrintf("ERROR Drivechain client (sendRequestToMainchain): %s\n", exception.what());
         return false;
     }

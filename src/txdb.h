@@ -81,7 +81,14 @@ public:
     bool WriteDrivechainIndex(const std::vector<std::pair<uint256, const drivechainObj *> > &list);
     bool WriteFlag(const std::string &name, bool fValue);
     bool ReadFlag(const std::string &name, bool &fValue);
-    bool LoadBlockIndexGuts(boost::function<CBlockIndex*(const uint256&)> insertBlockIndex);
+
+    bool GetDeposit(const uint256 & /* Deposit ID */, drivechainDeposit &deposit);
+    bool GetWT(const uint256 & /* wt ID */, drivechainWithdraw &withdraw);
+    bool GetJoinedWT(const uint256 & /* WT^ ID */, drivechainJoinedWT &joinedWT);
+
+    vector<drivechainDeposit> GetDeposits();
+    vector<drivechainWithdraw> GetWTs();
+    vector<drivechainJoinedWT> GetJoinedWTs();
 };
 
 #endif // BITCOIN_TXDB_H

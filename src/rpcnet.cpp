@@ -617,7 +617,7 @@ UniValue broadcastwt(const UniValue& params, bool fHelp)
                 "broadcastwt\n"
                 "\nSend WT^ to mainchain\n"
                 "\nArguments:\n"
-                "1. \"txid\"       (string, required) The transaction id\n"
+                "1. \"drivechainWTJoin id\"       (string, required) The transaction id\n"
                 "\nExamples:\n"
                 + HelpExampleCli("broadcastwt", "\"txid\"")
                 + HelpExampleRpc("broadcastwt", "\"txid\"")
@@ -630,11 +630,6 @@ UniValue broadcastwt(const UniValue& params, bool fHelp)
     uint256 hashBlock;
     // Note: Slow tx lookup
     GetTransaction(hash, wt, Params().GetConsensus(), hashBlock, true);
-
-    // Find txid in block index
-    CCoins coins;
-    if (!pcoinsTip->GetCoins(hash, coins))
-        throw JSONRPCError(RPC_MISC_ERROR, "Could not find txid");
 
     // Send to mainchain
     DrivechainClient client;

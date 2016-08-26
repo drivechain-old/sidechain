@@ -66,6 +66,7 @@ int nScriptCheckThreads = 0;
 bool fImporting = false;
 bool fReindex = false;
 bool fTxIndex = false;
+bool fDrivechainIndex = true;
 bool fHavePruned = false;
 bool fPruneMode = false;
 bool fIsBareMultisigStd = DEFAULT_PERMIT_BAREMULTISIG;
@@ -77,6 +78,23 @@ size_t nCoinCacheUsage = 5000 * 300;
 uint64_t nPruneTarget = 0;
 bool fAlerts = DEFAULT_ALERTS;
 bool fEnableReplacement = DEFAULT_ENABLE_REPLACEMENT;
+
+uint32_t GetDrivechainObjectHeight(drivechainObj &obj)
+{
+    uint32_t height = (uint32_t) (-1);
+
+    // If the obj exists on the blockchain, get the nHeight
+    CTransaction tx;
+    uint256 hashBlock;
+
+    if (GetTransaction(obj.txid, tx, Params().GetConsensus(),  hashBlock, true)) {
+        CBlockIndex *pindex = (*mapBlockIndex.find(hashBlock)).second;
+        if (pindex && chainActive.Contains(pindex))
+            height = pindex->nHeight;
+    }
+
+    return height;
+}
 
 /** Fees smaller than this (in satoshi) are considered zero fee (for relaying, mining and transaction creation) */
 CFeeRate minRelayTxFee = CFeeRate(DEFAULT_MIN_RELAY_TX_FEE);
@@ -2422,6 +2440,37 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     if (fTxIndex)
         if (!pblocktree->WriteTxIndex(vPos))
             return AbortNode(state, "Failed to write transaction index");
+
+    if (fDrivechainIndex && pdrivechaintree) {
+        // Collect drivechain objects
+        std::vector<std::pair<uint256, const drivechainObj *> > vDrivechainObjects;
+        for (size_t i = 0; i < block.vtx.size(); i++) {
+            const CTransaction &tx = block.vtx[i];
+            BOOST_FOREACH(const CTxOut& txout, tx.vout) {
+                const CScript& scriptPubKey = txout.scriptPubKey;
+                size_t script_sz = scriptPubKey.size();
+                if ((script_sz < 2) || (scriptPubKey[script_sz -1] != OP_DRIVECHAIN))
+                    continue;
+
+                drivechainObj *obj = drivechainObjCtr(scriptPubKey);
+                if (!obj)
+                    continue;
+
+                obj->txid = tx.GetHash();
+                vDrivechainObjects.push_back(std::make_pair(obj->GetHash(), obj));
+            }
+        }
+
+        // Write drivechain objects to DB
+        if (vDrivechainObjects.size()) {
+            bool ret = pdrivechaintree->WriteDrivechainIndex(vDrivechainObjects);
+            if (!ret)
+                return state.Error("Failed to write drivechain index!");
+
+            for (size_t i = 0; i < vDrivechainObjects.size(); i++)
+                delete vDrivechainObjects[i].second;
+        }
+    }
 
     // add this block to the view's block chain
     view.SetBestBlock(pindex->GetBlockHash());

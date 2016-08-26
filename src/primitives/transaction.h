@@ -259,6 +259,9 @@ public:
     // GetValueIn() is a method on CCoinsViewCache, because
     // inputs must be known to compute value in.
 
+    // Return sum of txouts to drivechain scripts.
+    CAmount GetValueOutToDrivechain() const;
+
     // Compute priority, given priority of inputs and (optionally) tx size
     double ComputePriority(double dPriorityInputs, unsigned int nTxSize=0) const;
 
