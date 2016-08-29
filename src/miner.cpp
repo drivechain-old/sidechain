@@ -12,6 +12,7 @@
 #include "consensus/consensus.h"
 #include "consensus/merkle.h"
 #include "consensus/validation.h"
+#include "drivechainclient.h"
 #include "hash.h"
 #include "main.h"
 #include "net.h"
@@ -21,6 +22,7 @@
 #include "primitives/transaction.h"
 #include "script/standard.h"
 #include "timedata.h"
+#include "txdb.h"
 #include "txmempool.h"
 #include "util.h"
 #include "utilmoneystr.h"
@@ -74,6 +76,26 @@ int64_t UpdateTime(CBlockHeader* pblock, const Consensus::Params& consensusParam
     return nNewTime - nOldTime;
 }
 
+void getDrivechainTX(CMutableTransaction &mtx, uint32_t height)
+{
+    if (!pdrivechaintree) return;
+
+    DrivechainClient client;
+    std::vector<drivechainIncoming> vIncoming = client.getDeposits(SIDECHAIN_ID, chainActive.Tip()->nHeight);
+
+    for (size_t i = 0; i < vIncoming.size(); i++) {
+        // Check deposit TODO
+
+        // Create a database entry noting that this deposit is complete
+        mtx.vout.push_back(CTxOut(1000000, vIncoming[i].GetScript()));
+
+        // Pay keyID the deposit
+        CScript script;
+        script << OP_DUP << OP_HASH160 << ToByteVector(vIncoming[i].keyID) << OP_EQUALVERIFY << OP_CHECKSIG;
+        mtx.vout.push_back(CTxOut(1000000, script));
+    }
+}
+
 CBlockTemplate* CreateNewBlock(const CChainParams& chainparams, const CScript& scriptPubKeyIn)
 {
     // Create new block
@@ -93,6 +115,10 @@ CBlockTemplate* CreateNewBlock(const CChainParams& chainparams, const CScript& s
     pblock->vtx.push_back(CTransaction());
     pblocktemplate->vTxFees.push_back(-1); // updated at end
     pblocktemplate->vTxSigOps.push_back(-1); // updated at end
+
+    // Create drivechain tx
+    uint32_t height = chainActive.Height() + 1;
+    getDrivechainTX(txNew, height);
 
     // Largest block you're willing to create:
     unsigned int nBlockMaxSize = GetArg("-blockmaxsize", DEFAULT_BLOCK_MAX_SIZE);
@@ -281,6 +307,14 @@ CBlockTemplate* CreateNewBlock(const CChainParams& chainparams, const CScript& s
 
         // Compute final coinbase transaction.
         txNew.vout[0].nValue = nFees + GetBlockSubsidy(nHeight, chainparams.GetConsensus());
+
+        if (txNew.vout.size() > 2) {
+            // TODO Do not limit deposits to block subsidy
+            // Subtract DB entry and payout
+            txNew.vout[0].nValue -= txNew.vout[1].nValue;
+            txNew.vout[0].nValue -= txNew.vout[2].nValue;
+        }
+
         txNew.vin[0].scriptSig = CScript() << nHeight << OP_0;
         pblock->vtx[0] = txNew;
         pblocktemplate->vTxFees[0] = -nFees;
