@@ -14,6 +14,7 @@
 #include "chain.h"
 #include "coins.h"
 #include "net.h"
+#include "primitives/drivechain.h"
 #include "script/script_error.h"
 #include "sync.h"
 #include "versionbits.h"
@@ -155,6 +156,8 @@ extern CBlockIndex *pindexBestHeader;
 
 /** Minimum disk space required - used in CheckDiskSpace() */
 static const uint64_t nMinDiskSpace = 52428800;
+
+uint32_t GetDrivechainObjectHeight(drivechainObj &obj);
 
 /** Pruning-related variables and constants */
 /** True if any block files have ever been pruned. */

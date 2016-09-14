@@ -7,6 +7,7 @@
 #define BITCOIN_MINER_H
 
 #include "primitives/block.h"
+#include "primitives/drivechain.h"
 
 #include <stdint.h>
 
@@ -31,14 +32,20 @@ struct CBlockTemplate
 
 /** Run the miner threads */
 void GenerateBitcoins(bool fGenerate, int nThreads, const CChainParams& chainparams);
-/** Add incoming and outgoing objects to the drivechain index, process transactions.
-  * Called whenever a new block is added via merged mining (~10 minutes).
-  */
-void getDrivechainTX(CMutableTransaction &mtx, uint32_t height);
 /** Generate a new block, without valid proof-of-work */
 CBlockTemplate* CreateNewBlock(const CChainParams& chainparams, const CScript& scriptPubKeyIn);
 /** Modify the extranonce in a block */
 void IncrementExtraNonce(CBlock* pblock, const CBlockIndex* pindexPrev, unsigned int& nExtraNonce);
 int64_t UpdateTime(CBlockHeader* pblock, const Consensus::Params& consensusParams, const CBlockIndex* pindexPrev);
+
+/** GetDepositTX & GetWTJoinTX:
+  * Add Deposits and wt / WT^ objects to the drivechain index.
+  * Called whenever a new block is added via merged mining (~10 minutes).
+  */
+
+/** Format & return deposit DB entry & payout immutable transaction */
+CTransaction GetDepositTX(uint32_t nHeight);
+/** Format & return WT^ immutable transaction */
+CTransaction GetWTJoinTX(uint32_t nHeight);
 
 #endif // BITCOIN_MINER_H

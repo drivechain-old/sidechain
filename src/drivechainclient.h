@@ -17,9 +17,9 @@ class DrivechainClient
 public:
     DrivechainClient();
 
-    bool sendDrivechainWT(uint256 txid);
+    bool sendDrivechainWT(uint256 wtjid, string hex);
 
-    std::vector<drivechainIncoming> getDeposits(uint256 sidechainid, uint32_t height);
+    std::vector<drivechainDeposit> getDeposits(uint256 sidechainid, uint32_t height);
 
 private:
     bool sendRequestToMainchain(const std::string json, boost::property_tree::ptree &ptree);

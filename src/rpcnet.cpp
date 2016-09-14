@@ -7,12 +7,14 @@
 #include "chainparams.h"
 #include "clientversion.h"
 #include "coins.h"
+#include "core_io.h"
 #include "drivechainclient.h"
 #include "main.h"
 #include "net.h"
 #include "netbase.h"
 #include "protocol.h"
 #include "sync.h"
+#include "txdb.h"
 #include "timedata.h"
 #include "txmempool.h"
 #include "ui_interface.h"
@@ -608,32 +610,30 @@ UniValue clearbanned(const UniValue& params, bool fHelp)
     return NullUniValue;
 }
 
-UniValue broadcastwttxid(const UniValue& params, bool fHelp)
+UniValue broadcastwt(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() != 1)
         throw runtime_error(
-                "broadcastwttxid\n"
-                "\nSend WT^ txid to mainchain\n"
+                "broadcastwt\n"
+                "\nSend WT^ to mainchain\n"
                 "\nArguments:\n"
-                "1. \"txid\"       (string, required) The transaction id\n"
+                "1. \"drivechainWTJoin id\"       (string, required) The transaction id\n"
                 "\nExamples:\n"
-                + HelpExampleCli("broadcastwttxid", "\"txid\"")
-                + HelpExampleRpc("broadcastwttxid", "\"txid\"")
+                + HelpExampleCli("broadcastwt", "\"txid\"")
+                + HelpExampleRpc("broadcastwt", "\"txid\"")
                 );
 
-    std::string strHash = params[0].get_str();
-    uint256 hash(uint256S(strHash));
+    uint256 hash(uint256S(params[0].get_str()));
 
-    LOCK(cs_main);
-
-    // Find txid in block index
-    CCoins coins;
-    if (!pcoinsTip->GetCoins(hash, coins))
-        throw JSONRPCError(RPC_MISC_ERROR, "Could not find txid");
+    // WT^ (joined)
+    CTransaction wt;
+    uint256 hashBlock;
+    // Note: Slow tx lookup
+    GetTransaction(hash, wt, Params().GetConsensus(), hashBlock, true);
 
     // Send to mainchain
     DrivechainClient client;
-    if (!client.sendDrivechainWT(hash))
+    if (!client.sendDrivechainWT(hash, EncodeHexTx(wt)))
         throw JSONRPCError(RPC_MISC_ERROR, "Failed to send WT^ txid to mainchain");
 
     return NullUniValue;

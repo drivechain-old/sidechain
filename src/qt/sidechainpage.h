@@ -27,6 +27,14 @@ private Q_SLOTS:
 
     void on_pushButtonNew_clicked();
 
+    void on_pushButtonWT_clicked();
+
+    void on_addressBookButton_clicked();
+
+    void on_pasteButton_clicked();
+
+    void on_deleteButton_clicked();
+
 private:
     Ui::SidechainPage *ui;
 
@@ -35,6 +43,8 @@ private:
 
     DrivechainHistoryTableModel *incomingTableModel;
     DrivechainHistoryTableModel *outgoingTableModel;
+
+    bool validate();
 };
 
 #endif // SIDECHAINPAGE_H

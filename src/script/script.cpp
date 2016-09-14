@@ -5,6 +5,7 @@
 
 #include "script.h"
 
+#include "primitives/drivechain.h"
 #include "tinyformat.h"
 #include "utilstrencodings.h"
 
@@ -210,6 +211,28 @@ bool CScript::IsPayToScriptHash() const
             (*this)[0] == OP_HASH160 &&
             (*this)[1] == 0x14 &&
             (*this)[22] == OP_EQUAL);
+}
+
+bool CScript::IsDrivechainScript() const
+{
+    size_t script_sz = this->size();
+
+    if (script_sz < 2) return false;
+    if ((*this)[script_sz - 1] != OP_DRIVECHAIN) return false;
+
+    drivechainObj *obj = drivechainObjCtr(*this);
+    if (!obj) return false;
+
+    if (obj->drivechainop == 'D')
+        return true;
+    else
+    if (obj->drivechainop == 'W')
+        return true;
+    else
+    if (obj->drivechainop == 'J')
+        return true;
+
+    return false;
 }
 
 bool CScript::IsPushOnly(const_iterator pc) const

@@ -17,11 +17,14 @@ const uint32_t nVersion = 1;
 uint256 drivechainObj::GetHash(void) const
 {
     uint256 ret;
-    if (drivechainop == 'I')
-        ret = SerializeHash(*(drivechainIncoming *) this);
+    if (drivechainop == 'D')
+        ret = SerializeHash(*(drivechainDeposit *) this);
     else
-    if (drivechainop == 'O')
-        ret = SerializeHash(*(drivechainOutgoing *) this);
+    if (drivechainop == 'W')
+        ret = SerializeHash(*(drivechainWithdraw *) this);
+    else
+    if (drivechainop == 'J')
+        ret = SerializeHash(*(drivechainJoinedWT *) this);
 
     return ret;
 }
@@ -30,11 +33,14 @@ CScript drivechainObj::GetScript(void) const
 {
     CDataStream ds(SER_DISK, CLIENT_VERSION);
 
-    if (drivechainop == 'I')
-        ((drivechainIncoming *) this)->Serialize(ds, nType, nVersion);
+    if (drivechainop == 'D')
+        ((drivechainDeposit *) this)->Serialize(ds, nType, nVersion);
     else
-    if (drivechainop == 'O')
-        ((drivechainOutgoing *) this)->Serialize(ds, nType, nVersion);
+    if (drivechainop == 'W')
+        ((drivechainWithdraw *) this)->Serialize(ds, nType, nVersion);
+    else
+    if (drivechainop == 'J')
+        ((drivechainJoinedWT *) this)->Serialize(ds, nType, nVersion);
 
     CScript script;
     script << vector<unsigned char>(ds.begin(), ds.end()) << OP_DRIVECHAIN;
@@ -54,14 +60,20 @@ drivechainObj *drivechainObjCtr(const CScript &script)
     const char *vchOP = (const char *) &vch.begin()[0];
     CDataStream ds(vchOP, vchOP+vch.size(), SER_DISK, CLIENT_VERSION);
 
-    if (*vchOP == 'I') {
-        drivechainIncoming *obj = new drivechainIncoming;
+    if (*vchOP == 'D') {
+        drivechainDeposit *obj = new drivechainDeposit;
         obj->Unserialize(ds, nType, nVersion);
         return obj;
     }
     else
-    if (*vchOP == 'O') {
-        drivechainOutgoing *obj = new drivechainOutgoing;
+    if (*vchOP == 'W') {
+        drivechainWithdraw *obj = new drivechainWithdraw;
+        obj->Unserialize(ds, nType, nVersion);
+        return obj;
+    }
+    else
+    if (*vchOP == 'J') {
+        drivechainJoinedWT *obj = new drivechainJoinedWT;
         obj->Unserialize(ds, nType, nVersion);
         return obj;
     }
@@ -78,7 +90,7 @@ string drivechainObj::ToString(void) const
     return str.str();
 }
 
-string drivechainIncoming::ToString() const
+string drivechainDeposit::ToString() const
 {
     stringstream str;
     str << "drivechainop=" << drivechainop << endl;
@@ -87,7 +99,16 @@ string drivechainIncoming::ToString() const
     return str.str();
 }
 
-string drivechainOutgoing::ToString() const
+string drivechainWithdraw::ToString() const
+{
+    stringstream str;
+    str << "drivechainop=" << drivechainop << endl;
+    str << "nHeight=" << nHeight << endl;
+    str << "txid=" << txid.GetHex() << endl;
+    return str.str();
+}
+
+string drivechainJoinedWT::ToString() const
 {
     stringstream str;
     str << "drivechainop=" << drivechainop << endl;

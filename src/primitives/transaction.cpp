@@ -99,6 +99,20 @@ CAmount CTransaction::GetValueOut() const
     return nValueOut;
 }
 
+CAmount CTransaction::GetValueOutToDrivechain() const
+{
+    CAmount nValueOut = 0;
+    for (std::vector<CTxOut>::const_iterator it(vout.begin()); it != vout.end(); ++it)
+    {
+        if (!it->scriptPubKey.IsDrivechainScript())
+            continue;
+        nValueOut += it->nValue;
+        if (!MoneyRange(it->nValue) || !MoneyRange(nValueOut))
+            throw std::runtime_error("CTransaction::GetValueOutToDrivechain(): value out of range");
+    }
+    return nValueOut;
+}
+
 double CTransaction::ComputePriority(double dPriorityInputs, unsigned int nTxSize) const
 {
     nTxSize = CalculateModifiedSize(nTxSize);
