@@ -27,6 +27,7 @@
 #include "util.h"
 #include "utilmoneystr.h"
 #include "validationinterface.h"
+#include "wallet/wallet.h"
 
 #include <boost/thread.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -308,9 +309,9 @@ CBlockTemplate* CreateNewBlock(const CChainParams& chainparams, const CScript& s
             // Create DB entry if not already added
             drivechainJoinedWT dup;
             if (!pdrivechaintree->GetJoinedWT(wtj.GetHash(), dup)) {
-                txNew.vout.push_back(CTxOut(1000000, wtj.GetScript()));
+                txNew.vout.push_back(CTxOut(CENT, wtj.GetScript()));
                 // Subtract from subsidy
-                txNew.vout[0].nValue -= 1000000;
+                txNew.vout[0].nValue -= CENT;
             }
 
             DrivechainClient client;
@@ -569,17 +570,15 @@ CTransaction GetDepositTX(uint32_t nHeight)
     DrivechainClient client;
     std::vector<drivechainDeposit> vDeposit;
     vDeposit = client.getDeposits(SIDECHAIN_ID, nHeight);
-
     CMutableTransaction mtx;
 
     for (size_t i = 0; i < vDeposit.size(); i++) {
-
-       drivechainDeposit dup;
-       if (pdrivechaintree->GetDeposit(vDeposit[i].GetHash(), dup))
-           continue;
+        drivechainDeposit dup;
+        if (pdrivechaintree->GetDeposit(vDeposit[i].GetHash(), dup))
+            continue;
 
         // Create deposit DB entry
-        mtx.vout.push_back(CTxOut(1000000, vDeposit[i].GetScript()));
+        mtx.vout.push_back(CTxOut(CENT, vDeposit[i].GetScript()));
 
         // Pay keyID the deposit
         for (size_t x = 0; x < vDeposit[i].deposit.vout.size(); x++) {
@@ -596,13 +595,17 @@ CTransaction GetDepositTX(uint32_t nHeight)
 
 CTransaction GetWTJoinTX(uint32_t nHeight)
 {
-    if (!pdrivechaintree) return CTransaction();
+    if (!pdrivechaintree)
+        return CTransaction();
+
+    if (nHeight % SIDECHAIN_TAU != 0)
+        return CTransaction();
 
     // Get all of the wt(s)
     std::vector<drivechainWithdraw> vWithdraw = pdrivechaintree->GetWTs();
 
-    if (!vWithdraw.size()) return CTransaction();
-    if (nHeight % SIDECHAIN_TAU != 0) return CTransaction();
+    if (!vWithdraw.size())
+        return CTransaction();
 
     // Filter by height the list of wt(s) to be joined in WT^
     std::vector<drivechainWithdraw> toJoin;
@@ -619,37 +622,28 @@ CTransaction GetWTJoinTX(uint32_t nHeight)
         toJoin.push_back(vWithdraw[i]);
     }
 
-    if (!toJoin.size()) return CTransaction();
-
-    // TODO calculate the min for each wt
-    CAmount tempFee = 1000000;
-
-    // groupFee is the actual sum of all of the fees being paid
-    // by individuals in the WT^ join.
-    CAmount groupFee = 0;
-
-    // Total amount to cover with deposits
-    CAmount totalWithdraw = 0;
-
-    // WT^
-    CMutableTransaction mtx;
+    if (!toJoin.size())
+        return CTransaction();
 
     // Add the wt's to the WT^
+    CAmount joinAmount = 0;  // Total output
+    CAmount joinFee = 0;     // Total fees
+    CMutableTransaction mtx; // WT^
     for (size_t i = 0; i < toJoin.size(); i++) {
-        // Amount
+        // Lookup the wt. Note: slow tx lookup
         CTransaction wt;
         uint256 hashBlock;
-        // Note: Slow tx lookup
         GetTransaction(toJoin[i].txid, wt, Params().GetConsensus(), hashBlock, true);
 
         CAmount amount = wt.GetValueOutToDrivechain();
 
-        // Group Fee
-        amount -= tempFee;
-        groupFee += tempFee;
+        // Calculate fee (which gets split in two)
+        unsigned int nBytes = GetSerializeSize(wt, SER_NETWORK, PROTOCOL_VERSION);
+        CAmount nFee = 2*CWallet::GetMinimumFee(nBytes, 2, mempool);
 
-        // Total withdraw payout
-        totalWithdraw += amount;
+        amount -= nFee;
+        joinAmount += amount;
+        joinFee += nFee;
 
         // Output to mainchain keyID
         CScript script;
@@ -658,31 +652,41 @@ CTransaction GetWTJoinTX(uint32_t nHeight)
     }
 
     // Did anything make it into the WT^?
-    if (!mtx.vout.size()) return CTransaction();
+    if (!mtx.vout.size())
+        return CTransaction();
 
-    // Add joined fee
-    if (groupFee > 0)
-        mtx.vout.push_back(CTxOut(groupFee, SIDECHAIN_FEESCRIPT));
+    // Add joined fee (the sidechain half) leave the rest for mainchain miners
+    if (joinFee > 0)
+        mtx.vout.push_back(CTxOut((joinFee / 2), SIDECHAIN_FEESCRIPT));
 
     // Add inputs
     std::vector<drivechainDeposit> vDeposit = pdrivechaintree->GetDeposits();
     for (size_t x = 0; x < vDeposit.size(); x++) {
-        if (totalWithdraw <= 0) break;
+        if (!(joinAmount > 0))
+            break;
 
         for (size_t y = 0; y < vDeposit[x].deposit.vout.size(); y++) {
             // Skip non deposit output(s)
             if (vDeposit[x].deposit.vout[y].scriptPubKey != SIDECHAIN_DEPOSITSCRIPT)
-                    continue;
+                continue;
 
-            totalWithdraw -= vDeposit[x].deposit.vout[y].nValue;
+            CAmount depositAmount = vDeposit[x].deposit.vout[y].nValue;
+
+            if ((joinAmount - depositAmount) < 0) {
+                CAmount change = std::abs(joinAmount - depositAmount);
+                mtx.vout.push_back(CTxOut(change - joinFee, SIDECHAIN_DEPOSITSCRIPT));
+                joinAmount = (joinAmount - depositAmount) + change;
+            } else {
+                joinAmount -= depositAmount;
+            }
 
             CTxIn in(vDeposit[x].deposit.GetHash(), y);
             mtx.vin.push_back(in);
         }
-
-        // TODO Handle change when deposit output > WT^ output
-        // TODO Remove deposit with spent inputs from DB
     }
+
+    if (joinAmount > 0)
+        return CTransaction();
 
     return mtx;
 }
