@@ -97,12 +97,10 @@ CBlockTemplate* CreateNewBlock(const CChainParams& chainparams, const CScript& s
     pblocktemplate->vTxFees.push_back(-1); // updated at end
     pblocktemplate->vTxSigOps.push_back(-1); // updated at end
 
-    // get the deposit ctransaction
-    // add it to txnew coinbase transaction
+    // Get sidechain deposit tx, add to block later
     CTransaction depositTX = GetDepositTX(chainActive.Height() + 1);
 
-    // get the wt^ ctransaction
-    // add it to txnew coinbase transaction
+    // Get sidechain WT^ tx, add to block later
     CTransaction wtJoinTX = GetWTJoinTX(chainActive.Height() + 1);
 
     // Largest block you're willing to create:
@@ -291,14 +289,18 @@ CBlockTemplate* CreateNewBlock(const CChainParams& chainparams, const CScript& s
         LogPrintf("CreateNewBlock(): total size %u txs: %u fees: %ld sigops %d\n", nBlockSize, nBlockTx, nFees, nBlockSigOps);
 
         // Compute final coinbase transaction.
-        txNew.vout[0].nValue = nFees + GetBlockSubsidy(nHeight, chainparams.GetConsensus());
+        txNew.vout[0].nValue = nFees;
 
         if (depositTX.vout.size()) {
-            // Payout deposits from block reward
             for (size_t i = 0; i < depositTX.vout.size(); i++) {
                 txNew.vout.push_back(depositTX.vout[i]);
-                txNew.vout[0].nValue -= depositTX.vout[i].nValue;
             }
+        }
+
+        if (chainActive.Height() == 7) {
+            // PREMINE for testing
+            // TODO use value from sidechain creation tx, make deposit
+            txNew.vout.push_back(CTxOut(COIN*7, SIDECHAIN_FEESCRIPT));
         }
 
         if (wtJoinTX.vout.size()) {
@@ -310,8 +312,6 @@ CBlockTemplate* CreateNewBlock(const CChainParams& chainparams, const CScript& s
             drivechainJoinedWT dup;
             if (!pdrivechaintree->GetJoinedWT(wtj.GetHash(), dup)) {
                 txNew.vout.push_back(CTxOut(CENT, wtj.GetScript()));
-                // Subtract from subsidy
-                txNew.vout[0].nValue -= CENT;
             }
 
             DrivechainClient client;
