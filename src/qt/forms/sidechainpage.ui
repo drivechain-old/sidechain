@@ -150,19 +150,19 @@
                     <item row="0" column="0">
                      <widget class="QLabel" name="label_5">
                       <property name="text">
-                       <string>Balance:</string>
+                       <string>Pending:</string>
                       </property>
                      </widget>
                     </item>
                     <item row="1" column="1">
-                     <widget class="QLabel" name="label_8">
+                     <widget class="QLabel" name="available">
                       <property name="text">
                        <string>0.0</string>
                       </property>
                      </widget>
                     </item>
                     <item row="0" column="1">
-                     <widget class="QLabel" name="label_6">
+                     <widget class="QLabel" name="pending">
                       <property name="text">
                        <string>0.0</string>
                       </property>
@@ -209,6 +209,12 @@
                        <widget class="QValidatedLineEdit" name="payTo">
                         <property name="toolTip">
                          <string>The Bitcoin address to send the payment to</string>
+                        </property>
+                        <property name="text">
+                         <string/>
+                        </property>
+                        <property name="placeholderText">
+                         <string>Mainchain Bitcoin Address</string>
                         </property>
                        </widget>
                       </item>
@@ -260,7 +266,7 @@
                     <item row="0" column="0">
                      <widget class="QLabel" name="label_9">
                       <property name="text">
-                       <string>Withdraw:</string>
+                       <string>Withdraw Address:</string>
                       </property>
                      </widget>
                     </item>
@@ -330,6 +336,9 @@
                         <horstretch>0</horstretch>
                         <verstretch>0</verstretch>
                        </sizepolicy>
+                      </property>
+                      <property name="placeholderText">
+                       <string>Sidechain Deposit Address</string>
                       </property>
                      </widget>
                     </item>

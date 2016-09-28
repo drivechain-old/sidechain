@@ -2,13 +2,17 @@
 #include "ui_sidechainpage.h"
 
 #include "base58.h"
+#include "bitcoinunits.h"
 #include "coins.h"
+#include "guiconstants.h"
 #include "guiutil.h"
 #include "init.h"
 #include "main.h"
+#include "optionsmodel.h"
 #include "primitives/drivechain.h"
 #include "txdb.h"
 #include "wallet/wallet.h"
+#include "walletmodel.h"
 
 #include <QApplication>
 #include <QClipboard>
@@ -93,6 +97,30 @@ void SidechainPage::generateQR(QString data)
         ui->QRCode->setPixmap(QPixmap::fromImage(qr).scaled(200, 200));
     }
 #endif
+}
+
+void SidechainPage::setWalletModel(WalletModel *model)
+{
+    this->walletModel = model;
+    if (model && model->getOptionsModel())
+    {
+        connect(model, SIGNAL(balanceChanged(CAmount,CAmount,CAmount,CAmount,CAmount,CAmount)), this,
+                SLOT(setBalance(CAmount,CAmount,CAmount,CAmount,CAmount,CAmount)));
+    }
+}
+
+void SidechainPage::setBalance(const CAmount& balance, const CAmount& unconfirmedBalance,
+                               const CAmount& immatureBalance, const CAmount& watchOnlyBalance,
+                               const CAmount& watchUnconfBalance, const CAmount& watchImmatureBalance)
+{
+    displayBalance(balance, immatureBalance + unconfirmedBalance);
+}
+
+void SidechainPage::displayBalance(const CAmount& balance, const CAmount& pending)
+{
+    int unit = walletModel->getOptionsModel()->getDisplayUnit();
+    ui->available->setText(BitcoinUnits::formatWithUnit(unit, balance, false, BitcoinUnits::separatorAlways));
+    ui->pending->setText(BitcoinUnits::formatWithUnit(unit, pending, false, BitcoinUnits::separatorAlways));
 }
 
 void SidechainPage::on_pushButtonWithdraw_clicked()
