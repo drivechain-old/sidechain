@@ -15,6 +15,14 @@
 #include <QDialog>
 #include <QStackedWidget>
 
+#if defined(HAVE_CONFIG_H)
+#include "config/bitcoin-config.h" /* for USE_QRCODE */
+#endif
+
+#ifdef USE_QRCODE
+#include <qrencode.h>
+#endif
+
 SidechainPage::SidechainPage(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::SidechainPage)
@@ -47,11 +55,44 @@ SidechainPage::SidechainPage(QWidget *parent) :
     // Display tables
     ui->frameIncoming->layout()->addWidget(incomingTableView);
     ui->frameOutgoing->layout()->addWidget(outgoingTableView);
+
+    generateAddress();
 }
 
 SidechainPage::~SidechainPage()
 {
     delete ui;
+}
+
+void SidechainPage::generateQR(QString data)
+{
+    if (data.isEmpty())
+        return;
+
+    if (data.size() != 34)
+        return;
+
+#ifdef USE_QRCODE
+    ui->QRCode->clear();
+
+    QRcode *code = QRcode_encodeString(data.toUtf8().constData(), 0, QR_ECLEVEL_L, QR_MODE_8, 1);
+
+    if (code) {
+        QImage qr = QImage(code->width + 8, code->width + 8, QImage::Format_RGB32);
+        qr.fill(0xffffff);
+
+        unsigned char *data = code->data;
+        for (int y = 0; y < code->width; y++) {
+            for (int x = 0; x < code->width; x++) {
+                qr.setPixel(x + 4, y + 4, ((*data & 1) ? 0x0 : 0xffffff));
+                data++;
+            }
+        }
+
+        QRcode_free(code);
+        ui->QRCode->setPixmap(QPixmap::fromImage(qr).scaled(200, 200));
+    }
+#endif
 }
 
 void SidechainPage::on_pushButtonWithdraw_clicked()
@@ -66,12 +107,12 @@ void SidechainPage::on_pushButtonDeposit_clicked()
 
 void SidechainPage::on_pushButtonCopy_clicked()
 {
-
+    GUIUtil::setClipboard(ui->lineEditDepositAddress->text());
 }
 
 void SidechainPage::on_pushButtonNew_clicked()
 {
-
+    generateAddress();
 }
 
 void SidechainPage::on_pushButtonWT_clicked()
@@ -165,4 +206,23 @@ bool SidechainPage::validate()
     }
 
     return true;
+}
+
+void SidechainPage::generateAddress()
+{
+    // TODO make part of wallet model, use AddressTableModel
+
+    LOCK2(cs_main, pwalletMain->cs_wallet);
+
+    pwalletMain->TopUpKeyPool();
+
+    CPubKey newKey;
+    if (pwalletMain->GetKeyFromPool(newKey)) {
+        CKeyID keyID = newKey.GetID();
+
+        CBitcoinAddress address(keyID);
+        generateQR(QString::fromStdString(address.ToString()));
+
+        ui->lineEditDepositAddress->setText(QString::fromStdString(address.ToString()));
+    }
 }

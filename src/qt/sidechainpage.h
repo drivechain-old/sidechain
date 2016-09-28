@@ -18,6 +18,8 @@ public:
     explicit SidechainPage(QWidget *parent = 0);
     ~SidechainPage();
 
+    void generateQR(QString data);
+
 private Q_SLOTS:
     void on_pushButtonWithdraw_clicked();
 
@@ -45,6 +47,8 @@ private:
     DrivechainHistoryTableModel *outgoingTableModel;
 
     bool validate();
+
+    void generateAddress();
 };
 
 #endif // SIDECHAINPAGE_H
