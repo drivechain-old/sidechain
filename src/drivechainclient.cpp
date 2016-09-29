@@ -5,8 +5,8 @@
 #include "drivechainclient.h"
 
 #include "core_io.h"
-#include "utilstrencodings.h" // For EncodeBase64
-#include "util.h" // For logPrintf
+#include "utilstrencodings.h"
+#include "util.h"
 
 #include <iostream>
 #include <sstream>
@@ -125,14 +125,14 @@ bool DrivechainClient::sendRequestToMainchain(const string json, boost::property
 
         if (error) throw boost::system::system_error(error);
 
-        // TODO username:password
         // HTTP request (package the json for sending)
         boost::asio::streambuf output;
         std::ostream os(&output);
         os << "POST / HTTP/1.1\n";
         os << "Host: 127.0.0.1\n";
         os << "Content-Type: application/json\n";
-        os << "Authorization: Basic " << EncodeBase64("patrick:drivechain") << "\n";
+        std::string auth = mapArgs["-rpcuser"] + ":" + mapArgs["-rpcpassword"];
+        os << "Authorization: Basic " << EncodeBase64(auth) << std::endl;
         os << "Connection: close\n";
         os << "Content-Length: " << json.size() << "\n\n";
         os << json;
