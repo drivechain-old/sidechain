@@ -565,27 +565,31 @@ void GenerateBitcoins(bool fGenerate, int nThreads, const CChainParams& chainpar
 
 CTransaction GetDepositTX(uint32_t nHeight)
 {
-    if (!pdrivechaintree) return CTransaction();
+    if (!pdrivechaintree)
+        return CTransaction();
 
+    // Collect deposits from the mainchain
     DrivechainClient client;
     std::vector<drivechainDeposit> vDeposit;
     vDeposit = client.getDeposits(SIDECHAIN_ID, nHeight);
-    CMutableTransaction mtx;
 
-    for (size_t i = 0; i < vDeposit.size(); i++) {
-        drivechainDeposit dup;
-        if (pdrivechaintree->GetDeposit(vDeposit[i].GetHash(), dup))
+    // Create deposit transaction
+    CMutableTransaction mtx;
+    for (size_t x = 0; x < vDeposit.size(); x++) {
+        // Skip duplicates
+        drivechainDeposit temp;
+        if (pdrivechaintree->GetDeposit(vDeposit[x].GetHash(), temp))
             continue;
 
         // Create deposit DB entry
-        mtx.vout.push_back(CTxOut(CENT, vDeposit[i].GetScript()));
+        mtx.vout.push_back(CTxOut(CENT, vDeposit[x].GetScript()));
 
         // Pay keyID the deposit
-        for (size_t x = 0; x < vDeposit[i].deposit.vout.size(); x++) {
-            if (vDeposit[i].deposit.vout[x].scriptPubKey == SIDECHAIN_DEPOSITSCRIPT) {
+        for (size_t y = 0; y < vDeposit[x].deposit.vout.size(); y++) {
+            if (vDeposit[x].deposit.vout[y].scriptPubKey == SIDECHAIN_DEPOSITSCRIPT) {
                 CScript script;
-                script << OP_DUP << OP_HASH160 << ToByteVector(vDeposit[i].keyID) << OP_EQUALVERIFY << OP_CHECKSIG;
-                mtx.vout.push_back(CTxOut(vDeposit[i].deposit.vout[x].nValue, script));
+                script << OP_DUP << OP_HASH160 << ToByteVector(vDeposit[x].keyID) << OP_EQUALVERIFY << OP_CHECKSIG;
+                mtx.vout.push_back(CTxOut(vDeposit[x].deposit.vout[y].nValue, script));
             }
         }
     }
