@@ -140,15 +140,17 @@ bool DrivechainClient::sendRequestToMainchain(const string json, boost::property
         // Send the request
         boost::asio::write(socket, output);
 
-        // TODO use boost's read function instead
-
         // Read the reponse
-        boost::array<char, 4096> buf;
+        std::string data;
         for (;;)
         {
+            boost::array<char, 4096> buf;
+
             // Read until end of file (socket closed)
             boost::system::error_code e;
-            socket.read_some(boost::asio::buffer(buf), e);
+            size_t sz = socket.read_some(boost::asio::buffer(buf), e);
+
+            data.insert(data.size(), buf.data(), sz);
 
             if (e == boost::asio::error::eof)
                 break; // socket closed
@@ -157,7 +159,7 @@ bool DrivechainClient::sendRequestToMainchain(const string json, boost::property
         }
 
         std::stringstream ss;
-        ss << buf.data();
+        ss << data;
 
         // Get response code
         ss.ignore(numeric_limits<streamsize>::max(), ' ');
