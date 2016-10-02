@@ -118,6 +118,7 @@ void WalletView::setWalletModel(WalletModel *walletModel)
     this->walletModel = walletModel;
 
     // Put transaction list in tabs
+    sidechainPage->setWalletModel(walletModel);
     transactionView->setModel(walletModel);
     overviewPage->setWalletModel(walletModel);
     receiveCoinsPage->setModel(walletModel);

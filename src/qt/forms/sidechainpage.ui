@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>985</width>
-    <height>649</height>
+    <width>815</width>
+    <height>630</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QHBoxLayout" name="horizontalLayout_2">
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
@@ -130,8 +130,8 @@
             <property name="frameShadow">
              <enum>QFrame::Raised</enum>
             </property>
-            <layout class="QVBoxLayout" name="verticalLayout_5">
-             <item>
+            <layout class="QGridLayout" name="gridLayout_9">
+             <item row="0" column="0">
               <widget class="QStackedWidget" name="stackedWidget">
                <property name="currentIndex">
                 <number>1</number>
@@ -150,19 +150,19 @@
                     <item row="0" column="0">
                      <widget class="QLabel" name="label_5">
                       <property name="text">
-                       <string>Balance:</string>
+                       <string>Pending:</string>
                       </property>
                      </widget>
                     </item>
                     <item row="1" column="1">
-                     <widget class="QLabel" name="label_8">
+                     <widget class="QLabel" name="available">
                       <property name="text">
                        <string>0.0</string>
                       </property>
                      </widget>
                     </item>
                     <item row="0" column="1">
-                     <widget class="QLabel" name="label_6">
+                     <widget class="QLabel" name="pending">
                       <property name="text">
                        <string>0.0</string>
                       </property>
@@ -209,6 +209,12 @@
                        <widget class="QValidatedLineEdit" name="payTo">
                         <property name="toolTip">
                          <string>The Bitcoin address to send the payment to</string>
+                        </property>
+                        <property name="text">
+                         <string/>
+                        </property>
+                        <property name="placeholderText">
+                         <string>Mainchain Bitcoin Address</string>
                         </property>
                        </widget>
                       </item>
@@ -260,7 +266,7 @@
                     <item row="0" column="0">
                      <widget class="QLabel" name="label_9">
                       <property name="text">
-                       <string>Withdraw:</string>
+                       <string>Withdraw Address:</string>
                       </property>
                      </widget>
                     </item>
@@ -290,27 +296,26 @@
                 </layout>
                </widget>
                <widget class="QWidget" name="pageDeposit">
-                <layout class="QVBoxLayout" name="verticalLayout_2">
+                <layout class="QHBoxLayout" name="horizontalLayout_5">
                  <item>
                   <widget class="QFrame" name="frame_6">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
                    <property name="frameShape">
                     <enum>QFrame::StyledPanel</enum>
                    </property>
                    <property name="frameShadow">
                     <enum>QFrame::Raised</enum>
                    </property>
-                   <layout class="QHBoxLayout" name="horizontalLayout_2">
-                    <item>
-                     <widget class="QLabel" name="labelDepositAddress">
-                      <property name="text">
-                       <string>Deposit Address</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
+                   <layout class="QGridLayout" name="gridLayout_8">
+                    <item row="3" column="1">
                      <widget class="QPushButton" name="pushButtonCopy">
                       <property name="sizePolicy">
-                       <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                         <horstretch>0</horstretch>
                         <verstretch>0</verstretch>
                        </sizepolicy>
@@ -324,20 +329,20 @@
                       </property>
                      </widget>
                     </item>
-                    <item>
-                     <spacer name="horizontalSpacer">
-                      <property name="orientation">
-                       <enum>Qt::Horizontal</enum>
+                    <item row="1" column="0" colspan="2">
+                     <widget class="QLineEdit" name="lineEditDepositAddress">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
                       </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>40</width>
-                        <height>20</height>
-                       </size>
+                      <property name="placeholderText">
+                       <string>Sidechain Deposit Address</string>
                       </property>
-                     </spacer>
+                     </widget>
                     </item>
-                    <item>
+                    <item row="3" column="0">
                      <widget class="QPushButton" name="pushButtonNew">
                       <property name="text">
                        <string>New</string>
@@ -348,11 +353,18 @@
                       </property>
                      </widget>
                     </item>
+                    <item row="0" column="0">
+                     <widget class="QLabel" name="labelDepositAddress">
+                      <property name="text">
+                       <string>Deposit Address</string>
+                      </property>
+                     </widget>
+                    </item>
                    </layout>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="pushButton_2">
+                  <widget class="QRImageWidget" name="QRCode">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                      <horstretch>0</horstretch>
@@ -361,44 +373,33 @@
                    </property>
                    <property name="minimumSize">
                     <size>
-                     <width>0</width>
-                     <height>80</height>
+                     <width>200</width>
+                     <height>200</height>
                     </size>
                    </property>
-                   <property name="text">
-                    <string>QR Code </string>
+                   <property name="maximumSize">
+                    <size>
+                     <width>200</width>
+                     <height>200</height>
+                    </size>
+                   </property>
+                   <property name="toolTip">
+                    <string>QR Code</string>
+                   </property>
+                   <property name="textFormat">
+                    <enum>Qt::PlainText</enum>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                   <property name="wordWrap">
+                    <bool>true</bool>
                    </property>
                   </widget>
-                 </item>
-                 <item>
-                  <spacer name="verticalSpacer">
-                   <property name="orientation">
-                    <enum>Qt::Vertical</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>20</width>
-                     <height>40</height>
-                    </size>
-                   </property>
-                  </spacer>
                  </item>
                 </layout>
                </widget>
               </widget>
-             </item>
-             <item>
-              <spacer name="verticalSpacer_2">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>20</width>
-                 <height>40</height>
-                </size>
-               </property>
-              </spacer>
              </item>
             </layout>
            </widget>
@@ -588,14 +589,20 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QValidatedLineEdit</class>
-   <extends>QLineEdit</extends>
-   <header>qvalidatedlineedit.h</header>
-  </customwidget>
-  <customwidget>
    <class>BitcoinAmountField</class>
    <extends>QLineEdit</extends>
    <header>bitcoinamountfield.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QRImageWidget</class>
+   <extends>QLabel</extends>
+   <header>receiverequestdialog.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QValidatedLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>qvalidatedlineedit.h</header>
   </customwidget>
  </customwidgets>
  <resources>

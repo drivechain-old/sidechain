@@ -5,8 +5,8 @@
 #include "drivechainclient.h"
 
 #include "core_io.h"
-#include "utilstrencodings.h" // For EncodeBase64
-#include "util.h" // For logPrintf
+#include "utilstrencodings.h"
+#include "util.h"
 
 #include <iostream>
 #include <sstream>
@@ -125,14 +125,14 @@ bool DrivechainClient::sendRequestToMainchain(const string json, boost::property
 
         if (error) throw boost::system::system_error(error);
 
-        // TODO username:password
         // HTTP request (package the json for sending)
         boost::asio::streambuf output;
         std::ostream os(&output);
         os << "POST / HTTP/1.1\n";
         os << "Host: 127.0.0.1\n";
         os << "Content-Type: application/json\n";
-        os << "Authorization: Basic " << EncodeBase64("patrick:drivechain") << "\n";
+        std::string auth = mapArgs["-rpcuser"] + ":" + mapArgs["-rpcpassword"];
+        os << "Authorization: Basic " << EncodeBase64(auth) << std::endl;
         os << "Connection: close\n";
         os << "Content-Length: " << json.size() << "\n\n";
         os << json;
@@ -140,15 +140,17 @@ bool DrivechainClient::sendRequestToMainchain(const string json, boost::property
         // Send the request
         boost::asio::write(socket, output);
 
-        // TODO use boost's read function instead
-
         // Read the reponse
-        boost::array<char, 4096> buf;
+        std::string data;
         for (;;)
         {
+            boost::array<char, 4096> buf;
+
             // Read until end of file (socket closed)
             boost::system::error_code e;
-            socket.read_some(boost::asio::buffer(buf), e);
+            size_t sz = socket.read_some(boost::asio::buffer(buf), e);
+
+            data.insert(data.size(), buf.data(), sz);
 
             if (e == boost::asio::error::eof)
                 break; // socket closed
@@ -157,7 +159,7 @@ bool DrivechainClient::sendRequestToMainchain(const string json, boost::property
         }
 
         std::stringstream ss;
-        ss << buf.data();
+        ss << data;
 
         // Get response code
         ss.ignore(numeric_limits<streamsize>::max(), ' ');
